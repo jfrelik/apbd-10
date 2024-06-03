@@ -1,6 +1,7 @@
 using System.Data;
 using CodeFirst.Prescriptions.Context;
 using CodeFirst.Prescriptions.Models;
+using CodeFirst.Prescriptions.ResponseModels;
 using Microsoft.EntityFrameworkCore;
 using Prescription = CodeFirst.Prescriptions.RequestModels.Prescription;
 
@@ -71,5 +72,48 @@ public class PrescriptionService: IPrescriptionService
         
         _context.Prescriptions.Add(prescription);
         await _context.SaveChangesAsync();
+    }
+    
+    public async Task<PatientPrescriptions> GetPatientPrescriptions(int id)
+    {
+        var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Id == id);
+        
+        if (patient == null)
+        {
+            throw new DataException("Patient not found.");
+        }
+        
+        var prescriptions = await _context.Prescriptions
+            .Where(p => p.PatientId == id)
+            .Include(p => p.Doctor)
+            .Include(p => p.PrescriptionMedicaments)
+            .ThenInclude(pm => pm.Medicament)
+            .ToListAsync();
+        
+        return new PatientPrescriptions
+        {
+            IdPatient = patient.Id,
+            FirstName = patient.FirstName,
+            LastName = patient.LastName,
+            BirthDate = patient.BirthDate,
+            Prescriptions = prescriptions.Select(p => new ResponseModels.Prescription
+            {
+                IdPrescription = p.Id,
+                Date = p.Date,
+                DueDate = p.DueDate,
+                Doctor = new ResponseModels.Doctor
+                {
+                    IdDoctor = p.Doctor.Id,
+                    FirstName = p.Doctor.FirstName,
+                },
+                Medicaments = p.PrescriptionMedicaments.Select(pm => new ResponseModels.Medicament()
+                {
+                    IdMedicament = pm.Medicament.Id,
+                    Name = pm.Medicament.Name,
+                    Dose = pm.Dose,
+                    Details = pm.Details
+                }).ToList()
+            }).ToList()
+        };
     }
 }

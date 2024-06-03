@@ -23,6 +23,23 @@ public static class Configuration
                 return Results.Problem(e.Message);
             }
         });
+        
+        app.MapGet("api/prescriptions/patient/{id:int}", async (IPrescriptionService service, int id) =>
+        {
+            try
+            {
+                var result = await service.GetPatientPrescriptions(id);
+                return Results.Ok(result);
+            }
+            catch (DataException e)
+            {
+                return Results.NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return Results.Problem(e.Message);
+            }
+        });
     }
 
 }
