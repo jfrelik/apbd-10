@@ -1,4 +1,4 @@
-namespace CodeFirst.Prescriptions.ResponseModels;
+namespace CodeFirst.Prescriptions.RequestModels;
 
 public class Patient
 {

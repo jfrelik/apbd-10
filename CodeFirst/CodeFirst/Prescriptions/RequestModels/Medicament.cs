@@ -1,8 +1,8 @@
-namespace CodeFirst.Prescriptions.ResponseModels;
+namespace CodeFirst.Prescriptions.RequestModels;
 
 public class Medicament
 {
     public int idMedicament { get; set; }
     public int Dose { get; set; }
-    public string Description { get; set; }
+    public string Details { get; set; }
 }
